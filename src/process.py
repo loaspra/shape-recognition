@@ -1,20 +1,22 @@
-"""
-This is the demo code that uses hydra to access the parameters in under the directory config.
+import pandas as pd
+import os
 
-Author: Khuyen Tran
-"""
 
-import hydra
-from omegaconf import DictConfig
-from hydra.utils import to_absolute_path as abspath
+data_path = os.getcwd() + "/data/raw"
 
-@hydra.main(config_path="../config", config_name='main')
-def process_data(config: DictConfig):
-    """Function to process the data"""
+# Scan the directory data_path and select only the directories
+dicc = {"file_path" : [], "label": []}
 
-    raw_path = abspath(config.raw.path)
-    print(f"Process data using {raw_path}")
-    print(f"Columns used: {config.process.use_columns}")
 
-if __name__ == '__main__':
-    process_data()
+for path in os.scandir(data_path):
+    if path.is_dir():
+        # Scan the directory and select only the files
+        for file in os.scandir(path):
+            dicc["file_path"].append(file.path)
+            dicc["label"].append(path.name)
+
+# Create a dataframe with the dictionary
+df = pd.DataFrame(dicc)
+
+# save the dataframe as a csv file in the data/processed directory
+df.to_csv(os.getcwd().replace('\\', '/') + "/data/processed/data.csv", index=False)
